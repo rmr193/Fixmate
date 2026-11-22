@@ -43,11 +43,28 @@ export function createApp(): Application {
   app.post(
     '/api/payments/webhook',
     express.raw({ type: 'application/json' }),
-    stripeWebhookHandler
+    async (req: Request, res: Response, next) => {
+      try {
+        await connectDB();
+        await stripeWebhookHandler(req, res);
+      } catch (err) {
+        next(err);
+      }
+    }
   );
 
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+  // Ensure MongoDB is connected on every request (supports both Vercel Serverless and traditional Node servers)
+  app.use(async (_req: Request, _res: Response, next) => {
+    try {
+      await connectDB();
+      next();
+    } catch (err) {
+      next(err);
+    }
+  });
 
   // Health & Root Endpoint
   app.get('/', (_req: Request, res: Response) => {
@@ -103,3 +120,6 @@ async function startServer() {
 if (require.main === module) {
   startServer();
 }
+
+const app = createApp();
+export default app;
