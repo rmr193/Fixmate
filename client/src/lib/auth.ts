@@ -34,6 +34,13 @@ export const auth = betterAuth({
     enabled: true,
     minPasswordLength: 6,
   },
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID || '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+      prompt: 'select_account',
+    },
+  },
   user: {
     modelName: 'users',
     additionalFields: {
@@ -74,6 +81,7 @@ export const auth = betterAuth({
           return {
             data: {
               ...user,
+              email: user.email.toLowerCase(),
               role: safeRole,
               phone: ((user as Record<string, unknown>).phone as string) || '',
               area:

@@ -25,6 +25,7 @@ interface AuthContextValue {
   token: string | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<UserProfile>;
+  loginWithGoogle: (callbackURL?: string) => Promise<void>;
   register: (payload: {
     name: string;
     email: string;
@@ -161,6 +162,24 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     [updateUserState]
   );
 
+  const loginWithGoogle = useCallback(async (callbackURL = '/dashboard') => {
+    // Clear any previous local JWT so the post-OAuth redirect exchanges the new Google session cookie
+    setStoredToken(null);
+    setStoredUser(null);
+
+    const res = await authClient.signIn.social({
+      provider: 'google',
+      callbackURL,
+    });
+
+    if (res?.error) {
+      throw new Error(
+        res.error.message ||
+          'Google Sign-In failed. Ensure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are configured.'
+      );
+    }
+  }, []);
+
   const register = useCallback(
     async (payload: {
       name: string;
@@ -216,6 +235,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
             token,
             isLoading,
             login,
+            loginWithGoogle,
             register,
             logout,
             refreshUser,

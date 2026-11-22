@@ -24,8 +24,12 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    const escapedEmail = session.user.email.replace(
+      /[.*+?^${}()|[\]\\]/g,
+      '\\$&'
+    );
     const userDoc = await mongoDb.collection('users').findOne({
-      email: session.user.email.toLowerCase(),
+      email: { $regex: new RegExp(`^${escapedEmail}$`, 'i') },
     });
 
     if (!userDoc) {
