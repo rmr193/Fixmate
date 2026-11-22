@@ -51,7 +51,7 @@ export default function TechnicianOverviewPage() {
     },
   });
 
-  const stats = serviceData?.stats || {
+  const stats = (!Array.isArray(serviceData) && serviceData?.stats) || {
     totalServices: 0,
     approvedServices: 0,
     pendingServices: 0,

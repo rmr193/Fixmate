@@ -57,14 +57,18 @@ export default function MyServicesPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['services', 'technician'],
     queryFn: async () => {
-      const res = await apiFetch<{ services: ServiceItem[] }>(
+      const res = await apiFetch<{ services: ServiceItem[]; stats?: Record<string, number> }>(
         '/api/services/my'
       );
-      return res.data.services;
+      return res.data;
     },
   });
 
-  const services = data || [];
+  const services: ServiceItem[] = Array.isArray(data)
+    ? data
+    : Array.isArray(data?.services)
+    ? data.services
+    : [];
 
   const {
     register,

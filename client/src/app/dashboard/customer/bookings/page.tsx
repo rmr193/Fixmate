@@ -34,14 +34,18 @@ export default function CustomerBookingsPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['bookings', 'customer'],
     queryFn: async () => {
-      const res = await apiFetch<{ bookings: BookingItem[] }>(
+      const res = await apiFetch<{ bookings: BookingItem[]; stats?: Record<string, number> }>(
         '/api/bookings/my'
       );
-      return res.data.bookings;
+      return res.data;
     },
   });
 
-  const bookings = data || [];
+  const bookings: BookingItem[] = Array.isArray(data)
+    ? data
+    : Array.isArray(data?.bookings)
+    ? data.bookings
+    : [];
 
   // Cancel Booking Mutation (only allowed for status === 'requested')
   const cancelMutation = useMutation({

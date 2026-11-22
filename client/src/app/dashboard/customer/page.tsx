@@ -41,14 +41,18 @@ export default function CustomerOverviewPage() {
     },
   });
 
-  const stats = data?.stats || {
+  const stats = (!Array.isArray(data) && data?.stats) || {
     totalRequests: 0,
     activeJobs: 0,
     completedJobs: 0,
     unpaidCompletedJobs: 0,
     totalSpent: 0,
   };
-  const bookings = data?.bookings || [];
+  const bookings: BookingItem[] = Array.isArray(data)
+    ? data
+    : Array.isArray(data?.bookings)
+    ? data.bookings
+    : [];
 
   const statusDistribution = [
     {
