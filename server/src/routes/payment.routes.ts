@@ -212,7 +212,6 @@ router.post(
       const unitAmountCents = Math.round(finalAmount * 100);
 
       const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
         mode: 'payment',
         customer_email: booking.customerEmail,
         line_items: [
