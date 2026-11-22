@@ -1,0 +1,26 @@
+{
+  "name": "fixmate-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FixMate — Smart Device & Home Appliance Repair Service Platform (Monorepo)",
+  "scripts": {
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "build:server": "npm --prefix server run build",
+    "build:client": "npm --prefix client run build",
+    "build": "npm run build:server && npm run build:client",
+    "seed": "npm --prefix server run seed",
+    "test:api": "npm --prefix server run test:api"
+  },
+  "keywords": [
+    "fixmate",
+    "repair-marketplace",
+    "nextjs",
+    "express",
+    "mongodb",
+    "better-auth",
+    "stripe"
+  ],
+  "author": "FixMate Engineering",
+  "license": "MIT"
+}
