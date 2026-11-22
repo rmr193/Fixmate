@@ -56,10 +56,11 @@
 
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
 
   body {
-    @apply bg-background text-foreground antialiased selection:bg-blue-600 selection:text-white;
+    @apply bg-background text-foreground antialiased selection:bg-blue-600 selection:text-white overflow-x-hidden;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 

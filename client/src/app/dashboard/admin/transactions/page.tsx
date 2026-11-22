@@ -82,77 +82,138 @@ export default function AdminTransactionsPage() {
           description="Verified Stripe payments will appear here once customers complete checkout."
         />
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xs dark:border-slate-800 dark:bg-slate-900">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-slate-200 bg-slate-50/80 text-xs font-bold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-400">
-                <tr>
-                  <th className="px-5 py-3.5">Customer</th>
-                  <th className="px-4 py-3.5">Technician</th>
-                  <th className="px-4 py-3.5">Service</th>
-                  <th className="px-4 py-3.5">Amount</th>
-                  <th className="px-4 py-3.5">Transaction ID</th>
-                  <th className="px-4 py-3.5">Payment Date</th>
-                  <th className="px-5 py-3.5 text-right">Receipt</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {payments.map((tx) => (
-                  <tr
-                    key={tx._id}
-                    className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40"
-                  >
-                    <td className="px-5 py-4">
-                      <p className="font-bold text-slate-900 dark:text-white">
-                        {tx.customerName}
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        {tx.customerEmail}
-                      </p>
-                    </td>
-                    <td className="px-4 py-4">
-                      <p className="font-semibold text-slate-900 dark:text-white">
-                        {tx.technicianName}
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        {tx.technicianEmail}
-                      </p>
-                    </td>
-                    <td className="px-4 py-4 font-medium text-slate-800 dark:text-slate-200">
-                      {tx.serviceTitle}
-                    </td>
-                    <td className="px-4 py-4 font-mono text-sm font-extrabold text-emerald-700 dark:text-emerald-400 whitespace-nowrap">
-                      {formatCurrency(tx.amount)}
-                    </td>
-                    <td className="px-4 py-4 font-mono text-xs text-slate-600 dark:text-slate-400">
-                      {tx.transactionId}
-                    </td>
-                    <td className="px-4 py-4 text-xs text-slate-600 dark:text-slate-400 whitespace-nowrap">
-                      {formatDateTime(tx.paidAt)}
-                    </td>
-                    <td className="px-5 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <StatusBadge status="paid" showIcon={false} />
-                        <Button
-                          type="button"
-                          variant="subtle"
-                          size="sm"
-                          onClick={() => setSelectedInvoice(tx)}
-                        >
-                          <FileText
-                            className="h-3.5 w-3.5"
-                            aria-hidden="true"
-                          />
-                          Receipt
-                        </Button>
-                      </div>
-                    </td>
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden lg:block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-slate-200 bg-slate-50/80 text-xs font-bold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-400">
+                  <tr>
+                    <th className="px-5 py-3.5">Customer</th>
+                    <th className="px-4 py-3.5">Technician</th>
+                    <th className="px-4 py-3.5">Service</th>
+                    <th className="px-4 py-3.5">Amount</th>
+                    <th className="px-4 py-3.5">Transaction ID</th>
+                    <th className="px-4 py-3.5">Payment Date</th>
+                    <th className="px-5 py-3.5 text-right">Receipt</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {payments.map((tx) => (
+                    <tr
+                      key={tx._id}
+                      className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40"
+                    >
+                      <td className="px-5 py-4">
+                        <p className="font-bold text-slate-900 dark:text-white">
+                          {tx.customerName}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {tx.customerEmail}
+                        </p>
+                      </td>
+                      <td className="px-4 py-4">
+                        <p className="font-semibold text-slate-900 dark:text-white">
+                          {tx.technicianName}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {tx.technicianEmail}
+                        </p>
+                      </td>
+                      <td className="px-4 py-4 font-medium text-slate-800 dark:text-slate-200">
+                        {tx.serviceTitle}
+                      </td>
+                      <td className="px-4 py-4 font-mono text-sm font-extrabold text-emerald-700 dark:text-emerald-400 whitespace-nowrap">
+                        {formatCurrency(tx.amount)}
+                      </td>
+                      <td className="px-4 py-4 font-mono text-xs text-slate-600 dark:text-slate-400">
+                        {tx.transactionId}
+                      </td>
+                      <td className="px-4 py-4 text-xs text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                        {formatDateTime(tx.paidAt)}
+                      </td>
+                      <td className="px-5 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <StatusBadge status="paid" showIcon={false} />
+                          <Button
+                            type="button"
+                            variant="subtle"
+                            size="sm"
+                            onClick={() => setSelectedInvoice(tx)}
+                          >
+                            <FileText
+                              className="h-3.5 w-3.5"
+                              aria-hidden="true"
+                            />
+                            Receipt
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+
+          {/* Mobile & Tablet Cards View */}
+          <div className="grid grid-cols-1 gap-4 lg:hidden">
+            {payments.map((tx) => (
+              <div
+                key={tx._id}
+                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-2xs space-y-3.5 dark:border-slate-800 dark:bg-slate-900"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h3 className="font-heading text-base font-bold text-slate-900 dark:text-white">
+                      {tx.serviceTitle}
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      {formatDateTime(tx.paidAt)}
+                    </p>
+                  </div>
+                  <span className="font-mono text-base font-extrabold text-emerald-700 dark:text-emerald-400">
+                    {formatCurrency(tx.amount)}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5 rounded-xl bg-slate-50 p-3 text-xs dark:bg-slate-800/60">
+                  <div>
+                    <span className="text-slate-500">Customer</span>
+                    <p className="font-semibold text-slate-900 dark:text-white">
+                      {tx.customerName}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-slate-500">Technician</span>
+                    <p className="font-semibold text-slate-900 dark:text-white">
+                      {tx.technicianName}
+                    </p>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="text-slate-500">Transaction ID</span>
+                    <p className="truncate font-mono text-slate-700 dark:text-slate-300">
+                      {tx.transactionId}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <StatusBadge status="paid" />
+                  <Button
+                    type="button"
+                    variant="subtle"
+                    size="sm"
+                    onClick={() => setSelectedInvoice(tx)}
+                  >
+                    <FileText className="h-3.5 w-3.5" aria-hidden="true" />
+                    Receipt
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       <InvoiceModal

@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import {
   Plus_Jakarta_Sans,
   Inter,
@@ -28,10 +28,25 @@ const jetbrainsMono = JetBrains_Mono({
   display: 'swap',
 });
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#1E40AF' },
+    { media: '(prefers-color-scheme: dark)', color: '#0B1120' },
+  ],
+};
+
 export const metadata: Metadata = {
   title: 'FixMate — Smart Device & Home Appliance Repair Service Platform',
   description:
     'Book verified technicians for smartphone, laptop, AC, refrigerator, TV, washing machine, and electrical repairs. Track your job live and pay via Stripe only after completion.',
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
+  },
 };
 
 export default function RootLayout({

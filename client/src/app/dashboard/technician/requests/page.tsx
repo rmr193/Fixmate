@@ -161,70 +161,106 @@ export default function ManageRequestsPage() {
           }
         />
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xs dark:border-slate-800 dark:bg-slate-900">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-slate-200 bg-slate-50/80 text-xs font-bold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-400">
-                <tr>
-                  <th className="px-5 py-3.5">Service &amp; Problem</th>
-                  <th className="px-4 py-3.5">Customer &amp; Contact</th>
-                  <th className="px-4 py-3.5">Address &amp; Date</th>
-                  <th className="px-4 py-3.5">Amount</th>
-                  <th className="px-4 py-3.5">Status</th>
-                  <th className="px-5 py-3.5 text-right">Valid Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {requests.map((booking) => (
-                  <tr
-                    key={booking._id}
-                    className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40"
-                  >
-                    <td className="px-5 py-4 max-w-xs">
-                      <p className="font-bold text-slate-900 dark:text-white">
-                        {booking.serviceTitle}
-                      </p>
-                      <p className="mt-1 text-xs text-slate-600 dark:text-slate-400 line-clamp-2">
-                        &ldquo;{booking.problemDescription}&rdquo;
-                      </p>
-                    </td>
-                    <td className="px-4 py-4">
-                      <p className="font-semibold text-slate-900 dark:text-white">
-                        {booking.customerName}
-                      </p>
-                      <p className="mt-0.5 inline-flex items-center gap-1 text-xs text-slate-600 dark:text-slate-400">
-                        <Phone className="h-3 w-3" aria-hidden="true" />
-                        {booking.customerPhone}
-                      </p>
-                    </td>
-                    <td className="px-4 py-4 max-w-[220px]">
-                      <p className="inline-flex items-start gap-1 text-xs text-slate-700 dark:text-slate-300 line-clamp-2">
-                        <MapPin
-                          className="h-3.5 w-3.5 shrink-0 mt-0.5 text-slate-400"
-                          aria-hidden="true"
-                        />
-                        {booking.address}
-                      </p>
-                      <p className="mt-1 inline-flex items-center gap-1 text-xs text-slate-500">
-                        <Calendar className="h-3 w-3" aria-hidden="true" />
-                        {formatDate(booking.preferredDate)}
-                      </p>
-                    </td>
-                    <td className="px-4 py-4 font-mono text-xs whitespace-nowrap">
-                      <span className="text-slate-500">
-                        Base: {formatCurrency(booking.basePrice)}
-                      </span>
-                      <p className="text-sm font-bold text-slate-900 dark:text-white">
-                        Final: {formatCurrency(booking.finalAmount)}
-                      </p>
-                    </td>
-                    <td className="px-4 py-4">
-                      <StatusBadge status={booking.status} />
-                    </td>
-                    <td className="px-5 py-4 text-right whitespace-nowrap">
-                      {/* Strict Action Matrix per Requirement */}
-                      {booking.status === 'requested' && (
-                        <div className="flex items-center justify-end gap-2">
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden lg:block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-slate-200 bg-slate-50/80 text-xs font-bold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-400">
+                  <tr>
+                    <th className="px-5 py-3.5">Service &amp; Problem</th>
+                    <th className="px-4 py-3.5">Customer &amp; Contact</th>
+                    <th className="px-4 py-3.5">Address &amp; Date</th>
+                    <th className="px-4 py-3.5">Amount</th>
+                    <th className="px-4 py-3.5">Status</th>
+                    <th className="px-5 py-3.5 text-right">Valid Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {requests.map((booking) => (
+                    <tr
+                      key={booking._id}
+                      className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40"
+                    >
+                      <td className="px-5 py-4 max-w-xs">
+                        <p className="font-bold text-slate-900 dark:text-white">
+                          {booking.serviceTitle}
+                        </p>
+                        <p className="mt-1 text-xs text-slate-600 dark:text-slate-400 line-clamp-2">
+                          &ldquo;{booking.problemDescription}&rdquo;
+                        </p>
+                      </td>
+                      <td className="px-4 py-4">
+                        <p className="font-semibold text-slate-900 dark:text-white">
+                          {booking.customerName}
+                        </p>
+                        <p className="mt-0.5 inline-flex items-center gap-1 text-xs text-slate-600 dark:text-slate-400">
+                          <Phone className="h-3 w-3" aria-hidden="true" />
+                          {booking.customerPhone}
+                        </p>
+                      </td>
+                      <td className="px-4 py-4 max-w-[220px]">
+                        <p className="inline-flex items-start gap-1 text-xs text-slate-700 dark:text-slate-300 line-clamp-2">
+                          <MapPin
+                            className="h-3.5 w-3.5 shrink-0 mt-0.5 text-slate-400"
+                            aria-hidden="true"
+                          />
+                          {booking.address}
+                        </p>
+                        <p className="mt-1 inline-flex items-center gap-1 text-xs text-slate-500">
+                          <Calendar className="h-3 w-3" aria-hidden="true" />
+                          {formatDate(booking.preferredDate)}
+                        </p>
+                      </td>
+                      <td className="px-4 py-4 font-mono text-xs whitespace-nowrap">
+                        <span className="text-slate-500">
+                          Base: {formatCurrency(booking.basePrice)}
+                        </span>
+                        <p className="text-sm font-bold text-slate-900 dark:text-white">
+                          Final: {formatCurrency(booking.finalAmount)}
+                        </p>
+                      </td>
+                      <td className="px-4 py-4">
+                        <StatusBadge status={booking.status} />
+                      </td>
+                      <td className="px-5 py-4 text-right whitespace-nowrap">
+                        {/* Strict Action Matrix per Requirement */}
+                        {booking.status === 'requested' && (
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              type="button"
+                              variant="default"
+                              size="sm"
+                              isLoading={updateStatusMutation.isPending}
+                              onClick={() =>
+                                updateStatusMutation.mutate({
+                                  bookingId: booking._id,
+                                  status: 'accepted',
+                                })
+                              }
+                            >
+                              <CheckCircle2
+                                className="h-3.5 w-3.5"
+                                aria-hidden="true"
+                              />
+                              Accept
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => setRejectTarget(booking)}
+                            >
+                              <XCircle
+                                className="h-3.5 w-3.5"
+                                aria-hidden="true"
+                              />
+                              Reject
+                            </Button>
+                          </div>
+                        )}
+
+                        {booking.status === 'accepted' && (
                           <Button
                             type="button"
                             variant="default"
@@ -233,81 +269,161 @@ export default function ManageRequestsPage() {
                             onClick={() =>
                               updateStatusMutation.mutate({
                                 bookingId: booking._id,
-                                status: 'accepted',
+                                status: 'in-progress',
                               })
                             }
                           >
-                            <CheckCircle2
-                              className="h-3.5 w-3.5"
-                              aria-hidden="true"
-                            />
-                            Accept
+                            <Play className="h-3.5 w-3.5" aria-hidden="true" />
+                            Start Work
                           </Button>
+                        )}
+
+                        {booking.status === 'in-progress' && (
                           <Button
                             type="button"
-                            variant="destructive"
+                            variant="success"
                             size="sm"
-                            onClick={() => setRejectTarget(booking)}
+                            onClick={() => openCompleteModal(booking)}
                           >
-                            <XCircle
+                            <CheckCheck
                               className="h-3.5 w-3.5"
                               aria-hidden="true"
                             />
-                            Reject
+                            Mark Completed
                           </Button>
-                        </div>
-                      )}
+                        )}
 
-                      {booking.status === 'accepted' && (
-                        <Button
-                          type="button"
-                          variant="default"
-                          size="sm"
-                          isLoading={updateStatusMutation.isPending}
-                          onClick={() =>
-                            updateStatusMutation.mutate({
-                              bookingId: booking._id,
-                              status: 'in-progress',
-                            })
-                          }
-                        >
-                          <Play className="h-3.5 w-3.5" aria-hidden="true" />
-                          Start Work
-                        </Button>
-                      )}
+                        {booking.status === 'completed' && (
+                          <StatusBadge status={booking.paymentStatus} />
+                        )}
 
-                      {booking.status === 'in-progress' && (
-                        <Button
-                          type="button"
-                          variant="success"
-                          size="sm"
-                          onClick={() => openCompleteModal(booking)}
-                        >
-                          <CheckCheck
-                            className="h-3.5 w-3.5"
-                            aria-hidden="true"
-                          />
-                          Mark Completed
-                        </Button>
-                      )}
-
-                      {booking.status === 'completed' && (
-                        <StatusBadge status={booking.paymentStatus} />
-                      )}
-
-                      {(booking.status === 'rejected' ||
-                        booking.status === 'cancelled') && (
-                        <span className="text-xs font-medium text-slate-400">
-                          No Action (Terminal)
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                        {(booking.status === 'rejected' ||
+                          booking.status === 'cancelled') && (
+                          <span className="text-xs font-medium text-slate-400">
+                            No Action (Terminal)
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+
+          {/* Mobile & Tablet Cards View */}
+          <div className="grid grid-cols-1 gap-4 lg:hidden">
+            {requests.map((booking) => (
+              <div
+                key={booking._id}
+                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-2xs space-y-3.5 dark:border-slate-800 dark:bg-slate-900"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <h3 className="font-heading text-base font-bold text-slate-900 dark:text-white">
+                      {booking.serviceTitle}
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Preferred Date: {formatDate(booking.preferredDate)}
+                    </p>
+                  </div>
+                  <StatusBadge status={booking.status} />
+                </div>
+
+                <p className="rounded-xl bg-slate-50 p-3 text-xs text-slate-700 dark:bg-slate-800/60 dark:text-slate-300">
+                  &ldquo;{booking.problemDescription}&rdquo;
+                </p>
+
+                <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
+                  <div>
+                    <span className="text-slate-500">Customer</span>
+                    <p className="font-semibold text-slate-900 dark:text-white">
+                      {booking.customerName} ({booking.customerPhone})
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-slate-500">Address</span>
+                    <p className="font-medium text-slate-800 dark:text-slate-200">
+                      {booking.address}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-slate-500">Base / Final Amount</span>
+                    <p className="font-mono font-bold text-slate-900 dark:text-white">
+                      {formatCurrency(booking.basePrice)} /{' '}
+                      {formatCurrency(booking.finalAmount)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-end gap-2 border-t border-slate-100 pt-3 dark:border-slate-800">
+                  {booking.status === 'requested' && (
+                    <>
+                      <Button
+                        type="button"
+                        variant="default"
+                        size="sm"
+                        isLoading={updateStatusMutation.isPending}
+                        onClick={() =>
+                          updateStatusMutation.mutate({
+                            bookingId: booking._id,
+                            status: 'accepted',
+                          })
+                        }
+                      >
+                        <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
+                        Accept
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => setRejectTarget(booking)}
+                      >
+                        <XCircle className="h-3.5 w-3.5" aria-hidden="true" />
+                        Reject
+                      </Button>
+                    </>
+                  )}
+
+                  {booking.status === 'accepted' && (
+                    <Button
+                      type="button"
+                      variant="default"
+                      size="sm"
+                      isLoading={updateStatusMutation.isPending}
+                      onClick={() =>
+                        updateStatusMutation.mutate({
+                          bookingId: booking._id,
+                          status: 'in-progress',
+                        })
+                      }
+                    >
+                      <Play className="h-3.5 w-3.5" aria-hidden="true" />
+                      Start Work
+                    </Button>
+                  )}
+
+                  {booking.status === 'in-progress' && (
+                    <Button
+                      type="button"
+                      variant="success"
+                      size="sm"
+                      onClick={() => openCompleteModal(booking)}
+                    >
+                      <CheckCheck className="h-3.5 w-3.5" aria-hidden="true" />
+                      Mark Completed
+                    </Button>
+                  )}
+
+                  {booking.status === 'completed' && (
+                    <StatusBadge status={booking.paymentStatus} />
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       {/* Mark Completed Modal to Enter Final Amount */}

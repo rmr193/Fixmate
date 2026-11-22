@@ -63,66 +63,125 @@ export default function CustomerPaymentsPage() {
           actionHref="/dashboard/customer/bookings"
         />
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xs dark:border-slate-800 dark:bg-slate-900">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-slate-200 bg-slate-50/80 text-xs font-bold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-400">
-                <tr>
-                  <th className="px-5 py-3.5">Service Title</th>
-                  <th className="px-4 py-3.5">Technician</th>
-                  <th className="px-4 py-3.5">Amount</th>
-                  <th className="px-4 py-3.5">Transaction ID</th>
-                  <th className="px-4 py-3.5">Payment Date</th>
-                  <th className="px-4 py-3.5">Status</th>
-                  <th className="px-5 py-3.5 text-right">Invoice</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {payments.map((payment) => (
-                  <tr
-                    key={payment._id}
-                    className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40"
-                  >
-                    <td className="px-5 py-4 font-bold text-slate-900 dark:text-white">
-                      {payment.serviceTitle}
-                    </td>
-                    <td className="px-4 py-4">
-                      <p className="font-medium text-slate-800 dark:text-slate-200">
-                        {payment.technicianName}
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        {payment.technicianEmail}
-                      </p>
-                    </td>
-                    <td className="px-4 py-4 font-mono text-sm font-extrabold text-slate-900 dark:text-white">
-                      {formatCurrency(payment.amount)}
-                    </td>
-                    <td className="px-4 py-4 font-mono text-xs text-slate-600 dark:text-slate-400">
-                      {payment.transactionId}
-                    </td>
-                    <td className="px-4 py-4 text-xs text-slate-600 dark:text-slate-400 whitespace-nowrap">
-                      {formatDateTime(payment.paidAt)}
-                    </td>
-                    <td className="px-4 py-4">
-                      <StatusBadge status="paid" />
-                    </td>
-                    <td className="px-5 py-4 text-right">
-                      <Button
-                        type="button"
-                        variant="subtle"
-                        size="sm"
-                        onClick={() => setSelectedInvoice(payment)}
-                      >
-                        <FileText className="h-3.5 w-3.5" aria-hidden="true" />
-                        Invoice
-                      </Button>
-                    </td>
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-slate-200 bg-slate-50/80 text-xs font-bold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-400">
+                  <tr>
+                    <th className="px-5 py-3.5">Service Title</th>
+                    <th className="px-4 py-3.5">Technician</th>
+                    <th className="px-4 py-3.5">Amount</th>
+                    <th className="px-4 py-3.5">Transaction ID</th>
+                    <th className="px-4 py-3.5">Payment Date</th>
+                    <th className="px-4 py-3.5">Status</th>
+                    <th className="px-5 py-3.5 text-right">Invoice</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {payments.map((payment) => (
+                    <tr
+                      key={payment._id}
+                      className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40"
+                    >
+                      <td className="px-5 py-4 font-bold text-slate-900 dark:text-white">
+                        {payment.serviceTitle}
+                      </td>
+                      <td className="px-4 py-4">
+                        <p className="font-medium text-slate-800 dark:text-slate-200">
+                          {payment.technicianName}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {payment.technicianEmail}
+                        </p>
+                      </td>
+                      <td className="px-4 py-4 font-mono text-sm font-extrabold text-slate-900 dark:text-white">
+                        {formatCurrency(payment.amount)}
+                      </td>
+                      <td className="px-4 py-4 font-mono text-xs text-slate-600 dark:text-slate-400">
+                        {payment.transactionId}
+                      </td>
+                      <td className="px-4 py-4 text-xs text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                        {formatDateTime(payment.paidAt)}
+                      </td>
+                      <td className="px-4 py-4">
+                        <StatusBadge status="paid" />
+                      </td>
+                      <td className="px-5 py-4 text-right">
+                        <Button
+                          type="button"
+                          variant="subtle"
+                          size="sm"
+                          onClick={() => setSelectedInvoice(payment)}
+                        >
+                          <FileText className="h-3.5 w-3.5" aria-hidden="true" />
+                          Invoice
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+
+          {/* Mobile Responsive Cards View */}
+          <div className="grid grid-cols-1 gap-4 md:hidden">
+            {payments.map((payment) => (
+              <div
+                key={payment._id}
+                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-2xs space-y-3.5 dark:border-slate-800 dark:bg-slate-900"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h3 className="font-heading text-base font-bold text-slate-900 dark:text-white">
+                      {payment.serviceTitle}
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Technician: {payment.technicianName}
+                    </p>
+                  </div>
+                  <StatusBadge status="paid" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5 rounded-xl bg-slate-50 p-3 text-xs dark:bg-slate-800/60">
+                  <div>
+                    <span className="text-slate-500">Amount Paid</span>
+                    <p className="mt-0.5 font-mono text-sm font-extrabold text-slate-900 dark:text-white">
+                      {formatCurrency(payment.amount)}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-slate-500">Date</span>
+                    <p className="mt-0.5 font-medium text-slate-800 dark:text-slate-200">
+                      {formatDateTime(payment.paidAt)}
+                    </p>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="text-slate-500">Transaction ID</span>
+                    <p className="mt-0.5 truncate font-mono text-slate-700 dark:text-slate-300">
+                      {payment.transactionId}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    variant="subtle"
+                    size="sm"
+                    className="w-full sm:w-auto"
+                    onClick={() => setSelectedInvoice(payment)}
+                  >
+                    <FileText className="h-3.5 w-3.5" aria-hidden="true" />
+                    View / Print Invoice
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       <InvoiceModal

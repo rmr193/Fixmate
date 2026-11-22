@@ -208,104 +208,187 @@ export default function MyServicesPage() {
           actionHref="/dashboard/technician/add-service"
         />
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xs dark:border-slate-800 dark:bg-slate-900">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-slate-200 bg-slate-50/80 text-xs font-bold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-400">
-                <tr>
-                  <th className="px-5 py-3.5">Service</th>
-                  <th className="px-4 py-3.5">Category &amp; Mode</th>
-                  <th className="px-4 py-3.5">Base Price</th>
-                  <th className="px-4 py-3.5">Approval Status</th>
-                  <th className="px-4 py-3.5">Availability</th>
-                  <th className="px-5 py-3.5 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {services.map((svc) => (
-                  <tr
-                    key={svc._id}
-                    className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40"
-                  >
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3.5">
-                        <img
-                          src={svc.image}
-                          alt={svc.title}
-                          className="h-12 w-16 shrink-0 rounded-lg object-cover bg-slate-100"
-                        />
-                        <div className="min-w-0">
-                          <p className="font-bold text-slate-900 dark:text-white line-clamp-1">
-                            {svc.title}
-                          </p>
-                          <p className="text-xs text-slate-500">
-                            Area: {svc.serviceArea} &bull; {svc.estimatedDuration}
-                          </p>
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden lg:block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-slate-200 bg-slate-50/80 text-xs font-bold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-400">
+                  <tr>
+                    <th className="px-5 py-3.5">Service</th>
+                    <th className="px-4 py-3.5">Category &amp; Mode</th>
+                    <th className="px-4 py-3.5">Base Price</th>
+                    <th className="px-4 py-3.5">Approval Status</th>
+                    <th className="px-4 py-3.5">Availability</th>
+                    <th className="px-5 py-3.5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {services.map((svc) => (
+                    <tr
+                      key={svc._id}
+                      className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40"
+                    >
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-3.5">
+                          <img
+                            src={svc.image}
+                            alt={svc.title}
+                            className="h-12 w-16 shrink-0 rounded-lg object-cover bg-slate-100"
+                          />
+                          <div className="min-w-0">
+                            <p className="font-bold text-slate-900 dark:text-white line-clamp-1">
+                              {svc.title}
+                            </p>
+                            <p className="text-xs text-slate-500">
+                              Area: {svc.serviceArea} &bull; {svc.estimatedDuration}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <span className="font-semibold text-slate-800 dark:text-slate-200">
+                      </td>
+                      <td className="px-4 py-4">
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">
+                          {svc.category}
+                        </span>
+                        <p className="text-xs text-slate-500">
+                          {svc.serviceMode}
+                        </p>
+                      </td>
+                      <td className="px-4 py-4 font-mono text-sm font-extrabold text-slate-900 dark:text-white">
+                        {formatCurrency(svc.basePrice)}
+                      </td>
+                      <td className="px-4 py-4">
+                        <StatusBadge status={svc.approvalStatus} />
+                      </td>
+                      <td className="px-4 py-4">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            toggleAvailabilityMutation.mutate({
+                              id: svc._id,
+                              isAvailable: !svc.isAvailable,
+                            })
+                          }
+                          aria-pressed={svc.isAvailable}
+                          className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold transition-colors cursor-pointer ${
+                            svc.isAvailable
+                              ? 'border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                              : 'border-slate-300 bg-slate-100 text-slate-600 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
+                          }`}
+                        >
+                          <Power className="h-3.5 w-3.5" aria-hidden="true" />
+                          {svc.isAvailable ? 'Available (On)' : 'Hidden (Off)'}
+                        </button>
+                      </td>
+                      <td className="px-5 py-4 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            type="button"
+                            variant="subtle"
+                            size="sm"
+                            onClick={() => openEditModal(svc)}
+                          >
+                            <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                            Edit
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => setDeleteTarget(svc)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                            Delete
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Mobile & Tablet Cards View */}
+          <div className="grid grid-cols-1 gap-4 lg:hidden">
+            {services.map((svc) => (
+              <div
+                key={svc._id}
+                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-2xs space-y-4 dark:border-slate-800 dark:bg-slate-900"
+              >
+                <div className="flex items-start gap-3.5">
+                  <img
+                    src={svc.image}
+                    alt={svc.title}
+                    className="h-16 w-20 shrink-0 rounded-xl object-cover bg-slate-100"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <StatusBadge status={svc.approvalStatus} />
+                      <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                         {svc.category}
                       </span>
-                      <p className="text-xs text-slate-500">
-                        {svc.serviceMode}
-                      </p>
-                    </td>
-                    <td className="px-4 py-4 font-mono text-sm font-extrabold text-slate-900 dark:text-white">
+                    </div>
+                    <h3 className="mt-1.5 font-heading text-base font-bold text-slate-900 dark:text-white">
+                      {svc.title}
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      {svc.serviceMode} &bull; {svc.serviceArea}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3.5 py-2.5 text-xs dark:bg-slate-800/60">
+                  <div>
+                    <span className="text-slate-500">Base Price</span>
+                    <p className="font-mono text-base font-extrabold text-slate-900 dark:text-white">
                       {formatCurrency(svc.basePrice)}
-                    </td>
-                    <td className="px-4 py-4">
-                      <StatusBadge status={svc.approvalStatus} />
-                    </td>
-                    <td className="px-4 py-4">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          toggleAvailabilityMutation.mutate({
-                            id: svc._id,
-                            isAvailable: !svc.isAvailable,
-                          })
-                        }
-                        aria-pressed={svc.isAvailable}
-                        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold transition-colors cursor-pointer ${
-                          svc.isAvailable
-                            ? 'border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                            : 'border-slate-300 bg-slate-100 text-slate-600 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
-                        }`}
-                      >
-                        <Power className="h-3.5 w-3.5" aria-hidden="true" />
-                        {svc.isAvailable ? 'Available (On)' : 'Hidden (Off)'}
-                      </button>
-                    </td>
-                    <td className="px-5 py-4 text-right whitespace-nowrap">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          type="button"
-                          variant="subtle"
-                          size="sm"
-                          onClick={() => openEditModal(svc)}
-                        >
-                          <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
-                          Edit
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => setDeleteTarget(svc)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-                          Delete
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      toggleAvailabilityMutation.mutate({
+                        id: svc._id,
+                        isAvailable: !svc.isAvailable,
+                      })
+                    }
+                    aria-pressed={svc.isAvailable}
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer ${
+                      svc.isAvailable
+                        ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                        : 'border-slate-300 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
+                    }`}
+                  >
+                    <Power className="h-3.5 w-3.5" aria-hidden="true" />
+                    {svc.isAvailable ? 'Available (On)' : 'Hidden (Off)'}
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-1">
+                  <Button
+                    type="button"
+                    variant="subtle"
+                    size="sm"
+                    onClick={() => openEditModal(svc)}
+                  >
+                    <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                    Edit
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setDeleteTarget(svc)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                    Delete
+                  </Button>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
+        </>
       )}
 
       {/* Edit Service Modal */}
