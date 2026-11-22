@@ -224,7 +224,7 @@ router.patch(
   verifyCustomer,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
+      const id = String(req.params.id);
       if (!ObjectId.isValid(id)) {
         throw new AppError('Invalid booking ID.', 400);
       }
@@ -329,7 +329,7 @@ router.patch(
   verifyTechnician,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
+      const id = String(req.params.id);
       if (!ObjectId.isValid(id)) {
         throw new AppError('Invalid booking ID.', 400);
       }
@@ -433,7 +433,7 @@ router.post(
   verifyCustomer,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
+      const id = String(req.params.id);
       if (!ObjectId.isValid(id)) {
         throw new AppError('Invalid booking ID.', 400);
       }

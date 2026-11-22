@@ -254,7 +254,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
  */
 router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { id } = req.params;
+    const id = String(req.params.id);
     if (!ObjectId.isValid(id)) {
       throw new AppError('Service not found.', 404);
     }
@@ -398,7 +398,7 @@ router.patch(
   verifyTechnician,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
+      const id = String(req.params.id);
       if (!ObjectId.isValid(id)) {
         throw new AppError('Invalid service ID.', 400);
       }
@@ -489,7 +489,7 @@ router.delete(
   verifyTechnician,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
+      const id = String(req.params.id);
       if (!ObjectId.isValid(id)) {
         throw new AppError('Invalid service ID.', 400);
       }
