@@ -12,21 +12,34 @@ import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
 
 export function createApp(): Application {
   const app = express();
+  app.disable('x-powered-by');
 
-  // CORS configuration with trusted origins support
+  // Security headers middleware
+  app.use((_req: Request, res: Response, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    next();
+  });
+
+  // Strict CORS configuration allowing only trusted origins
   app.use(
     cors({
       origin: (origin, callback) => {
         if (!origin) return callback(null, true);
         if (
           env.TRUSTED_ORIGINS.includes(origin) ||
+          origin === env.CLIENT_URL ||
+          origin === 'https://fixmate-spmy.vercel.app' ||
           origin.endsWith('.vercel.app') ||
-          origin.startsWith('http://localhost:') ||
-          origin.startsWith('http://127.0.0.1:')
+          (env.NODE_ENV !== 'production' &&
+            (origin.startsWith('http://localhost:') ||
+              origin.startsWith('http://127.0.0.1:')))
         ) {
           return callback(null, true);
         }
-        return callback(null, true);
+        return callback(new Error('Origin not allowed by CORS'));
       },
       credentials: true,
       methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],

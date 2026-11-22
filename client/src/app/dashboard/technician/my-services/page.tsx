@@ -37,8 +37,8 @@ const editServiceSchema = z.object({
     .string()
     .trim()
     .min(20, 'Description must be at least 20 characters.'),
-  basePrice: z.coerce
-    .number()
+  basePrice: z
+    .number({ message: 'Please enter a valid base price.' })
     .positive('Base price must be greater than 0.'),
   estimatedDuration: z.string().trim().min(2, 'Duration is required.'),
   serviceMode: z.enum(SERVICE_MODES),
@@ -367,7 +367,7 @@ export default function MyServicesPage() {
               type="number"
               step="0.01"
               error={errors.basePrice?.message}
-              {...register('basePrice')}
+              {...register('basePrice', { valueAsNumber: true })}
             />
             <Input
               label="Estimated Duration *"

@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { Wrench, Lock, KeyRound, ArrowRight } from 'lucide-react';
+import { Wrench, Lock, ArrowRight } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { Input } from '@/components/ui/input';
@@ -36,7 +36,6 @@ function SignInFormContent() {
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors, isSubmitting },
   } = useForm<SignInFormValues>({
     resolver: zodResolver(signInSchema),
@@ -74,12 +73,6 @@ function SignInFormContent() {
     }
   };
 
-  const fillDemoAccount = (email: string, pass: string) => {
-    setValue('email', email, { shouldValidate: true });
-    setValue('password', pass, { shouldValidate: true });
-    setServerError(null);
-  };
-
   const handleGoogleSignIn = async () => {
     setServerError(null);
     setGoogleLoading(true);
@@ -111,43 +104,6 @@ function SignInFormContent() {
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
             Access your repair bookings, technician workspace, or admin console
           </p>
-        </div>
-
-        {/* Quick Demo Credential Selector for Evaluators */}
-        <div className="mt-6 rounded-xl border border-blue-200 bg-blue-50/70 p-3.5 dark:border-blue-900 dark:bg-blue-950/40">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-[#1E40AF] dark:text-blue-400">
-            <KeyRound className="h-3.5 w-3.5" aria-hidden="true" />
-            <span>Quick Fill Demo Accounts</span>
-          </div>
-          <div className="mt-2.5 grid grid-cols-3 gap-2">
-            <button
-              type="button"
-              onClick={() =>
-                fillDemoAccount('customer@fixmate.com', 'Customer@123456')
-              }
-              className="rounded-lg border border-blue-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-800 hover:border-[#1E40AF] hover:text-[#1E40AF] cursor-pointer dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-            >
-              Customer
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                fillDemoAccount('tech@fixmate.com', 'Tech@123456')
-              }
-              className="rounded-lg border border-blue-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-800 hover:border-[#1E40AF] hover:text-[#1E40AF] cursor-pointer dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-            >
-              Technician
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                fillDemoAccount('admin@fixmate.com', 'Admin@123456')
-              }
-              className="rounded-lg border border-blue-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-800 hover:border-[#1E40AF] hover:text-[#1E40AF] cursor-pointer dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-            >
-              Admin
-            </button>
-          </div>
         </div>
 
         {serverError && (

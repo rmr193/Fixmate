@@ -18,18 +18,15 @@ const router = Router();
 router.use(verifyToken, verifyAdmin);
 
 const updateRoleSchema = z.object({
-  role: z.enum(['customer', 'technician', 'admin'], {
-    errorMap: () => ({
-      message: 'Role must be one of: customer, technician, admin.',
-    }),
+  role: z.enum(['customer', 'technician'], {
+    message:
+      'Only customer or technician roles can be assigned. Only one administrator is permitted on the platform.',
   }),
 });
 
 const updateApprovalSchema = z.object({
   approvalStatus: z.enum(['approved', 'rejected', 'pending'], {
-    errorMap: () => ({
-      message: 'Approval status must be approved, rejected, or pending.',
-    }),
+    message: 'Approval status must be approved, rejected, or pending.',
   }),
 });
 
@@ -188,13 +185,14 @@ router.patch(
         throw new AppError('User not found.', 404);
       }
 
-      // Business Rule: An admin cannot change their own role
+      // Business Rule: An admin cannot change their own role, and only one admin exists
       if (
         targetUser.email.toLowerCase() === req.user!.email.toLowerCase() ||
-        targetUser._id?.toString() === req.user!._id
+        targetUser._id?.toString() === req.user!._id ||
+        targetUser.role === 'admin'
       ) {
         throw new AppError(
-          'Forbidden: Administrators cannot change their own role.',
+          'Forbidden: The sole platform administrator role cannot be modified.',
           403
         );
       }

@@ -177,10 +177,10 @@ export default function AdminManageUsersPage() {
                         {formatDate(u.createdAt)}
                       </td>
                       <td className="px-5 py-4 text-right whitespace-nowrap">
-                        {isSelf ? (
+                        {isSelf || u.role === 'admin' ? (
                           <span className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-500 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-400">
                             <Shield className="h-3.5 w-3.5" aria-hidden="true" />
-                            Self Role Locked
+                            Single Admin Locked
                           </span>
                         ) : (
                           <select
@@ -197,7 +197,6 @@ export default function AdminManageUsersPage() {
                           >
                             <option value="customer">Customer</option>
                             <option value="technician">Technician</option>
-                            <option value="admin">Admin</option>
                           </select>
                         )}
                       </td>

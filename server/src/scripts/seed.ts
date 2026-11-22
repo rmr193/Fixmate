@@ -25,11 +25,16 @@ export async function seedDatabase() {
 
   const now = new Date();
 
-  // Hash demo passwords using BetterAuth's native password hasher
+  const adminEmail = (process.env.ADMIN_EMAIL || 'admin@fixmate.com').toLowerCase();
+  const adminPlain = process.env.ADMIN_PASSWORD || 'Admin@123456';
+  const techPlain = process.env.SEED_TECH_PASSWORD || 'Tech@123456';
+  const customerPlain = process.env.SEED_CUSTOMER_PASSWORD || 'Customer@123456';
+
+  // Hash passwords using BetterAuth's native password hasher
   const [adminHash, techHash, customerHash] = await Promise.all([
-    hashPassword('Admin@123456'),
-    hashPassword('Tech@123456'),
-    hashPassword('Customer@123456'),
+    hashPassword(adminPlain),
+    hashPassword(techPlain),
+    hashPassword(customerPlain),
   ]);
 
   const adminId = new ObjectId();
@@ -44,7 +49,7 @@ export async function seedDatabase() {
       _id: adminId,
       id: adminId.toString(),
       name: 'System Administrator',
-      email: 'admin@fixmate.com',
+      email: adminEmail,
       emailVerified: true,
       image:
         'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',

@@ -19,7 +19,7 @@ const createServiceSchema = z.object({
     .min(3, 'Service title must be at least 3 characters.')
     .max(120, 'Service title cannot exceed 120 characters.'),
   category: z.enum(SERVICE_CATEGORIES, {
-    errorMap: () => ({ message: 'Please select a valid service category.' }),
+    message: 'Please select a valid service category.',
   }),
   description: z
     .string()
@@ -39,9 +39,7 @@ const createServiceSchema = z.object({
     .min(2, 'Estimated duration is required (e.g. "2-3 hours").')
     .max(60, 'Estimated duration is too long.'),
   serviceMode: z.enum(SERVICE_MODES, {
-    errorMap: () => ({
-      message: 'Service mode must be either "Home Visit" or "Shop Drop-off".',
-    }),
+    message: 'Service mode must be either "Home Visit" or "Shop Drop-off".',
   }),
   serviceArea: z
     .string()

@@ -22,15 +22,15 @@ const addServiceSchema = z.object({
     .min(3, 'Title must be at least 3 characters.')
     .max(120, 'Title cannot exceed 120 characters.'),
   category: z.enum(SERVICE_CATEGORIES, {
-    errorMap: () => ({ message: 'Please select a valid repair category.' }),
+    message: 'Please select a valid repair category.',
   }),
   description: z
     .string()
     .trim()
     .min(20, 'Description must be at least 20 characters.')
     .max(2000, 'Description cannot exceed 2000 characters.'),
-  basePrice: z.coerce
-    .number()
+  basePrice: z
+    .number({ message: 'Please enter a valid base price.' })
     .positive('Base price must be a positive number greater than 0.'),
   estimatedDuration: z
     .string()
@@ -38,7 +38,7 @@ const addServiceSchema = z.object({
     .min(2, 'Estimated duration is required (e.g. "2-3 hours").')
     .max(60, 'Duration is too long.'),
   serviceMode: z.enum(SERVICE_MODES, {
-    errorMap: () => ({ message: 'Please select a service mode.' }),
+    message: 'Please select a service mode.',
   }),
   serviceArea: z
     .string()
@@ -231,7 +231,7 @@ export default function AddServicePage() {
               min="1"
               placeholder="65"
               error={errors.basePrice?.message}
-              {...register('basePrice')}
+              {...register('basePrice', { valueAsNumber: true })}
             />
             <Input
               label="Estimated Duration *"

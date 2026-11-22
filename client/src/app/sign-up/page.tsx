@@ -31,9 +31,7 @@ const signUpSchema = z.object({
     .regex(/[A-Z]/, 'Password must contain at least one uppercase letter.')
     .regex(/[a-z]/, 'Password must contain at least one lowercase letter.'),
   role: z.enum(['customer', 'technician'], {
-    errorMap: () => ({
-      message: 'Please choose either Customer or Technician.',
-    }),
+    message: 'Please choose either Customer or Technician.',
   }),
 });
 

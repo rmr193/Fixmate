@@ -17,7 +17,7 @@ export function errorHandler(
   _next: NextFunction
 ) {
   if (err instanceof ZodError) {
-    const formatted = err.errors.map((issue) => ({
+    const formatted = err.issues.map((issue) => ({
       field: issue.path.join('.'),
       message: issue.message,
     }));

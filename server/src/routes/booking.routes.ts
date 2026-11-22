@@ -43,10 +43,8 @@ const createBookingSchema = z.object({
 
 const updateStatusSchema = z.object({
   status: z.enum(['accepted', 'rejected', 'in-progress', 'completed'], {
-    errorMap: () => ({
-      message:
-        'Status must be one of: accepted, rejected, in-progress, completed.',
-    }),
+    message:
+      'Status must be one of: accepted, rejected, in-progress, completed.',
   }),
   finalAmount: z.coerce.number().optional(),
 });

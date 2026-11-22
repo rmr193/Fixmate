@@ -14,18 +14,9 @@ It connects device and home appliance owners with verified repair specialists th
 
 ---
 
-## 🔑 Demo Credentials (Pre-Seeded & Ready for Evaluation)
-
-| Role | Email | Password | Capabilities |
-| :--- | :--- | :--- | :--- |
-| **Admin** | `admin@fixmate.com` | `Admin@123456` | Moderate pending services, manage user roles, monitor all bookings & verified Stripe revenue |
-| **Technician 1** | `tech@fixmate.com` | `Tech@123456` | Senior Smartphone & Laptop Specialist (Arif Rahman) — CRUD services, progress assigned jobs |
-| **Technician 2** | `rafiq.tech@fixmate.com` | `Tech@123456` | Certified HVAC, Split AC & Refrigerator Engineer (Engr. Rafiqul Islam) |
-| **Technician 3** | `nadia.tech@fixmate.com` | `Tech@123456` | Smart TV, Washing Machine & Electrical Engineer (Nadia Karim) |
-| **Customer 1** | `customer@fixmate.com` | `Customer@123456` | Browse services, send repair requests, cancel pending requests, pay for completed jobs via Stripe |
-| **Customer 2** | `sadia@fixmate.com` | `Customer@123456` | Customer account with active & historical repair bookings |
-
-> **Tip**: On `/sign-in`, use the **Quick Fill Demo Accounts** buttons (`Customer`, `Technician`, `Admin`) for instant 1-click evaluation.
+## 🔐 Role-Based Access & Single-Admin Security
+- **Customers & Technicians**: Can register via Email/Password or sign in via **Google OAuth 2.0** (Google users default to the `customer` role).
+- **Single Platform Administrator**: Public admin registration and promotion to a second admin are strictly blocked on the server. The single platform administrator account is provisioned securely via environment-configured database seeding.
 
 ---
 
