@@ -7,9 +7,10 @@ It connects device and home appliance owners with verified repair specialists th
 ---
 
 ## 🌐 Live URL & Repositories
-- **Live Application**: [https://fixmate-app.vercel.app](https://fixmate-app.vercel.app)
-- **Client Repository**: [https://github.com/rmr193/Fixmate/tree/main/client](https://github.com/rmr193/Fixmate)
-- **Server Repository**: [https://github.com/rmr193/Fixmate/tree/main/server](https://github.com/rmr193/Fixmate)
+- **Live Application (Frontend)**: [https://fixmate-spmy.vercel.app](https://fixmate-spmy.vercel.app)
+- **Live API Server (Backend)**: [https://fixmate-gray-three.vercel.app](https://fixmate-gray-three.vercel.app)
+- **Client Repository**: [https://github.com/rmr193/Fixmate/tree/main/client](https://github.com/rmr193/Fixmate/tree/main/client)
+- **Server Repository**: [https://github.com/rmr193/Fixmate/tree/main/server](https://github.com/rmr193/Fixmate/tree/main/server)
 
 ---
 

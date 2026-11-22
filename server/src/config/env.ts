@@ -13,9 +13,15 @@ export const env = {
   BETTER_AUTH_URL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
   JWT_SECRET: process.env.JWT_SECRET || 'fixmate_jwt_hs256_signing_secret_key_2026_verified',
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
-  CLIENT_URL: process.env.CLIENT_URL || 'http://localhost:3000',
+  CLIENT_URL:
+    process.env.CLIENT_URL && !process.env.CLIENT_URL.includes('localhost')
+      ? process.env.CLIENT_URL.replace(/\/$/, '')
+      : process.env.NODE_ENV === 'production'
+      ? 'https://fixmate-spmy.vercel.app'
+      : process.env.CLIENT_URL || 'http://localhost:3000',
   TRUSTED_ORIGINS: (
-    process.env.TRUSTED_ORIGINS || 'http://localhost:3000,http://127.0.0.1:3000'
+    process.env.TRUSTED_ORIGINS ||
+    'http://localhost:3000,http://127.0.0.1:3000,https://fixmate-spmy.vercel.app'
   )
     .split(',')
     .map((o) => o.trim())

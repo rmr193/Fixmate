@@ -42,6 +42,7 @@ export const auth = betterAuth({
     'http://127.0.0.1:3000',
     resolvedBaseUrl,
     process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+    'https://fixmate-spmy.vercel.app',
     'https://fixmate-app.vercel.app',
     'https://*.vercel.app',
   ],
