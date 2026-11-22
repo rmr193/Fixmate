@@ -25,7 +25,10 @@ interface AuthContextValue {
   token: string | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<UserProfile>;
-  loginWithGoogle: (callbackURL?: string) => Promise<void>;
+  loginWithGoogle: (
+    callbackURL?: string,
+    role?: 'customer' | 'technician'
+  ) => Promise<void>;
   register: (payload: {
     name: string;
     email: string;
@@ -90,7 +93,20 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
       }
 
       // Fallback: check Next.js BetterAuth cookie session and exchange for JWT
-      const tokenRes = await fetch('/api/auth/token', {
+      const pendingOAuthRole =
+        typeof window !== 'undefined'
+          ? localStorage.getItem('fixmate_pending_oauth_role')
+          : null;
+      if (pendingOAuthRole && typeof window !== 'undefined') {
+        localStorage.removeItem('fixmate_pending_oauth_role');
+      }
+
+      const tokenEndpoint =
+        pendingOAuthRole === 'technician' || pendingOAuthRole === 'customer'
+          ? `/api/auth/token?oauth_role=${encodeURIComponent(pendingOAuthRole)}`
+          : '/api/auth/token';
+
+      const tokenRes = await fetch(tokenEndpoint, {
         credentials: 'include',
       });
       if (tokenRes.ok) {
@@ -162,22 +178,33 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     [updateUserState]
   );
 
-  const loginWithGoogle = useCallback(async (callbackURL = '/dashboard') => {
-    // Clear any previous local JWT so the post-OAuth redirect exchanges the new Google session cookie
-    setStoredToken(null);
-    setStoredUser(null);
+  const loginWithGoogle = useCallback(
+    async (
+      callbackURL = '/dashboard',
+      role?: 'customer' | 'technician'
+    ) => {
+      // Clear any previous local JWT so the post-OAuth redirect exchanges the new Google session cookie
+      setStoredToken(null);
+      setStoredUser(null);
+      if (typeof window !== 'undefined') {
+        if (role === 'technician' || role === 'customer') {
+          localStorage.setItem('fixmate_pending_oauth_role', role);
+        } else {
+          localStorage.removeItem('fixmate_pending_oauth_role');
+        }
+      }
 
-    const response = await fetch('/api/auth/sign-in/social', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        provider: 'google',
-        callbackURL,
-      }),
-    });
+      const response = await fetch('/api/auth/sign-in/social', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          provider: 'google',
+          callbackURL,
+        }),
+      });
 
     let data: { url?: string; message?: string; error?: string } | null = null;
     try {

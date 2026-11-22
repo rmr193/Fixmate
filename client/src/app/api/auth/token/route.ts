@@ -40,7 +40,21 @@ export async function GET(req: NextRequest) {
     }
 
     const userId = (userDoc._id || userDoc.id || session.user.id).toString();
-    const role = (userDoc.role as string) || 'customer';
+    let role = (userDoc.role as string) || 'customer';
+
+    // Support applying 'technician' or 'customer' role chosen on /sign-up prior to Google OAuth redirect
+    const requestedOAuthRole = req.nextUrl.searchParams.get('oauth_role');
+    if (
+      role !== 'admin' &&
+      (requestedOAuthRole === 'technician' || requestedOAuthRole === 'customer') &&
+      requestedOAuthRole !== role
+    ) {
+      await mongoDb.collection('users').updateOne(
+        { _id: userDoc._id },
+        { $set: { role: requestedOAuthRole, updatedAt: new Date() } }
+      );
+      role = requestedOAuthRole;
+    }
 
     const token = jwt.sign(
       {
