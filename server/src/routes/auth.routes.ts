@@ -65,7 +65,13 @@ router.post(
 
       const now = new Date();
       const userId = new ObjectId();
-      const passwordHash = await bcrypt.hash(parsed.password, 10);
+      let passwordHash: string;
+      try {
+        const { hashPassword } = await import('better-auth/crypto');
+        passwordHash = await hashPassword(parsed.password);
+      } catch {
+        passwordHash = await bcrypt.hash(parsed.password, 10);
+      }
 
       const defaultAvatar =
         parsed.image ||
