@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { hashPassword } from 'better-auth/crypto';
+import { hashBetterAuthPassword } from '../routes/auth.routes';
 import { connectDB, closeDB, getCollections, getDB } from '../config/db';
 import {
   BookingDocument,
@@ -30,11 +30,11 @@ export async function seedDatabase() {
   const techPlain = process.env.SEED_TECH_PASSWORD || 'Tech@123456';
   const customerPlain = process.env.SEED_CUSTOMER_PASSWORD || 'Customer@123456';
 
-  // Hash passwords using BetterAuth's native password hasher
+  // Hash passwords using BetterAuth's native scrypt format
   const [adminHash, techHash, customerHash] = await Promise.all([
-    hashPassword(adminPlain),
-    hashPassword(techPlain),
-    hashPassword(customerPlain),
+    hashBetterAuthPassword(adminPlain),
+    hashBetterAuthPassword(techPlain),
+    hashBetterAuthPassword(customerPlain),
   ]);
 
   const adminId = new ObjectId();

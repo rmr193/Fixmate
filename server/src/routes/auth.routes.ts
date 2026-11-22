@@ -1,4 +1,5 @@
 import { Router, Request, Response, NextFunction } from 'express';
+import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { ObjectId } from 'mongodb';
 import { z } from 'zod';
@@ -8,6 +9,54 @@ import { AppError, sendSuccess } from '../utils/apiResponse';
 import { UserRole } from '../types/models';
 
 const router = Router();
+
+const SCRYPT_CONFIG = {
+  N: 16384,
+  r: 16,
+  p: 1,
+  dkLen: 64,
+};
+
+function generateScryptKey(password: string, salt: string): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    crypto.scrypt(
+      password.normalize('NFKC'),
+      salt,
+      SCRYPT_CONFIG.dkLen,
+      {
+        N: SCRYPT_CONFIG.N,
+        r: SCRYPT_CONFIG.r,
+        p: SCRYPT_CONFIG.p,
+        maxmem: 128 * SCRYPT_CONFIG.N * SCRYPT_CONFIG.r * 2,
+      },
+      (err, key) => {
+        if (err) reject(err);
+        else resolve(key);
+      }
+    );
+  });
+}
+
+export async function hashBetterAuthPassword(password: string): Promise<string> {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const key = await generateScryptKey(password, salt);
+  return `${salt}:${key.toString('hex')}`;
+}
+
+export async function verifyBetterAuthPassword(
+  hash: string,
+  password: string
+): Promise<boolean> {
+  const [salt, keyHex] = hash.split(':');
+  if (!salt || !keyHex) return false;
+  const derivedKey = await generateScryptKey(password, salt);
+  const derivedHex = derivedKey.toString('hex');
+  if (derivedHex.length !== keyHex.length) return false;
+  return crypto.timingSafeEqual(
+    Buffer.from(derivedHex, 'utf8'),
+    Buffer.from(keyHex, 'utf8')
+  );
+}
 
 const registerSchema = z.object({
   name: z
@@ -65,13 +114,7 @@ router.post(
 
       const now = new Date();
       const userId = new ObjectId();
-      let passwordHash: string;
-      try {
-        const { hashPassword } = await import('better-auth/crypto');
-        passwordHash = await hashPassword(parsed.password);
-      } catch {
-        passwordHash = await bcrypt.hash(parsed.password, 10);
-      }
+      const passwordHash = await hashBetterAuthPassword(parsed.password);
 
       const defaultAvatar =
         parsed.image ||
@@ -179,13 +222,11 @@ router.post(
         if (storedHash.startsWith('$2a$') || storedHash.startsWith('$2b$')) {
           passwordValid = await bcrypt.compare(parsed.password, storedHash);
         } else {
-          // BetterAuth scrypt hash compatibility via dynamic import if needed
           try {
-            const { verifyPassword } = await import('better-auth/crypto');
-            passwordValid = await verifyPassword({
-              hash: storedHash,
-              password: parsed.password,
-            });
+            passwordValid = await verifyBetterAuthPassword(
+              storedHash,
+              parsed.password
+            );
           } catch {
             passwordValid = false;
           }
