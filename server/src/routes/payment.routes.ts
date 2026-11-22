@@ -1,5 +1,4 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import crypto from 'crypto';
 import { ObjectId } from 'mongodb';
 import Stripe from 'stripe';
 import { z } from 'zod';
@@ -11,18 +10,23 @@ import { AppError, sendSuccess } from '../utils/apiResponse';
 
 const router = Router();
 
-const isRealStripeKey =
-  Boolean(env.STRIPE_SECRET_KEY) &&
-  env.STRIPE_SECRET_KEY.startsWith('sk_test_') &&
-  !env.STRIPE_SECRET_KEY.includes('Placeholder') &&
-  !env.STRIPE_SECRET_KEY.includes('replace_with');
-
-const stripe = new Stripe(
-  env.STRIPE_SECRET_KEY || 'sk_test_51FixMateTestModeKeyPlaceholder000000000',
-  {
-    apiVersion: '2025-01-27.acacia' as Stripe.LatestApiVersion,
+function getStripeClient(): Stripe {
+  if (
+    !env.STRIPE_SECRET_KEY ||
+    !env.STRIPE_SECRET_KEY.startsWith('sk_test_') ||
+    env.STRIPE_SECRET_KEY.includes('Placeholder') ||
+    env.STRIPE_SECRET_KEY.includes('replace_with')
+  ) {
+    throw new AppError(
+      'Stripe Test Mode Secret Key (STRIPE_SECRET_KEY) is not configured on the server.',
+      500
+    );
   }
-);
+
+  return new Stripe(env.STRIPE_SECRET_KEY, {
+    apiVersion: '2025-01-27.acacia' as Stripe.LatestApiVersion,
+  });
+}
 
 const checkoutSchema = z.object({
   bookingId: z.string().trim().min(1, 'Booking ID is required.'),
@@ -139,31 +143,10 @@ export async function recordVerifiedPayment(params: {
   };
 }
 
-function createSignedLocalSessionToken(bookingId: string, customerEmail: string): string {
-  const sig = crypto
-    .createHmac('sha256', env.JWT_SECRET)
-    .update(`${bookingId}:${customerEmail}`)
-    .digest('hex')
-    .slice(0, 20);
-  return `cs_test_fixmate_${bookingId}_${sig}`;
-}
-
-function verifySignedLocalSessionToken(
-  sessionId: string
-): { bookingId: string; valid: boolean } {
-  const match = /^cs_test_fixmate_([a-f0-9]{24})_([a-f0-9]{20})$/i.exec(
-    sessionId
-  );
-  if (!match) {
-    return { bookingId: '', valid: false };
-  }
-  return { bookingId: match[1], valid: true };
-}
-
 /**
  * POST /api/payments/create-checkout-session
  * Protected (Customer — Challenge 2 & Challenge 3 Payment Gate):
- * Creates a Stripe Checkout Session ONLY when:
+ * Creates a real Stripe Checkout Session ONLY when:
  * 1. Booking belongs to logged-in customer
  * 2. Booking status === 'completed'
  * 3. Booking paymentStatus === 'unpaid'
@@ -175,6 +158,7 @@ router.post(
   verifyCustomer,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const stripe = getStripeClient();
       const { bookingId } = checkoutSchema.parse(req.body);
       if (!ObjectId.isValid(bookingId)) {
         throw new AppError('Invalid booking ID.', 400);
@@ -227,68 +211,45 @@ router.post(
 
       const unitAmountCents = Math.round(finalAmount * 100);
 
-      if (isRealStripeKey) {
-        const session = await stripe.checkout.sessions.create({
-          payment_method_types: ['card'],
-          mode: 'payment',
-          customer_email: booking.customerEmail,
-          line_items: [
-            {
-              price_data: {
-                currency: 'usd',
-                product_data: {
-                  name: `FixMate Repair: ${booking.serviceTitle}`,
-                  description: `Technician: ${booking.technicianName} | Category: ${booking.category}`,
-                  ...(booking.serviceImage &&
-                  booking.serviceImage.startsWith('http')
-                    ? { images: [booking.serviceImage] }
-                    : {}),
-                },
-                unit_amount: unitAmountCents,
-              },
-              quantity: 1,
-            },
-          ],
-          metadata: {
-            bookingId: booking._id.toString(),
-            customerEmail: booking.customerEmail,
-            technicianEmail: booking.technicianEmail,
-            serviceTitle: booking.serviceTitle,
-          },
-          success_url: `${env.CLIENT_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url: `${env.CLIENT_URL}/payment/cancel?booking_id=${booking._id.toString()}`,
-        });
-
-        return sendSuccess(
-          res,
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        mode: 'payment',
+        customer_email: booking.customerEmail,
+        line_items: [
           {
-            sessionId: session.id,
-            url: session.url,
-            amount: finalAmount,
-            mode: 'stripe-live-test',
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: `FixMate Repair: ${booking.serviceTitle}`,
+                description: `Technician: ${booking.technicianName} | Category: ${booking.category}`,
+                ...(booking.serviceImage &&
+                booking.serviceImage.startsWith('http')
+                  ? { images: [booking.serviceImage] }
+                  : {}),
+              },
+              unit_amount: unitAmountCents,
+            },
+            quantity: 1,
           },
-          'Stripe Checkout Session created.'
-        );
-      }
-
-      // Deterministic signed Stripe Test Mode simulation when STRIPE_SECRET_KEY is placeholder
-      const testSessionId = createSignedLocalSessionToken(
-        booking._id.toString(),
-        booking.customerEmail.toLowerCase()
-      );
-      const checkoutUrl = `${env.CLIENT_URL}/payment/success?session_id=${encodeURIComponent(
-        testSessionId
-      )}&booking_id=${booking._id.toString()}`;
+        ],
+        metadata: {
+          bookingId: booking._id.toString(),
+          customerEmail: booking.customerEmail,
+          technicianEmail: booking.technicianEmail,
+          serviceTitle: booking.serviceTitle,
+        },
+        success_url: `${env.CLIENT_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${env.CLIENT_URL}/payment/cancel?booking_id=${booking._id.toString()}`,
+      });
 
       return sendSuccess(
         res,
         {
-          sessionId: testSessionId,
-          url: checkoutUrl,
+          sessionId: session.id,
+          url: session.url,
           amount: finalAmount,
-          mode: 'stripe-test-simulated',
         },
-        'Stripe Checkout Session initialized in test mode.'
+        'Stripe Checkout Session created.'
       );
     } catch (err) {
       return next(err);
@@ -298,7 +259,7 @@ router.post(
 
 /**
  * GET /api/payments/verify?session_id=...
- * Protected (Customer): Verifies Stripe Checkout Session on /payment/success and records payment idempotently.
+ * Protected (Customer): Verifies real Stripe Checkout Session on /payment/success and records payment idempotently.
  */
 router.get(
   '/verify',
@@ -306,6 +267,7 @@ router.get(
   verifyCustomer,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const stripe = getStripeClient();
       const sessionId =
         typeof req.query.session_id === 'string'
           ? req.query.session_id.trim()
@@ -316,61 +278,18 @@ router.get(
       }
 
       const { bookings } = getCollections();
+      const session = await stripe.checkout.sessions.retrieve(sessionId);
 
-      if (isRealStripeKey && !sessionId.startsWith('cs_test_fixmate_')) {
-        const session = await stripe.checkout.sessions.retrieve(sessionId);
-        if (!session || session.payment_status !== 'paid') {
-          throw new AppError('Payment has not been completed in Stripe.', 400);
-        }
-
-        const bookingId = session.metadata?.bookingId;
-        if (!bookingId || !ObjectId.isValid(bookingId)) {
-          throw new AppError('Booking reference missing in Stripe session.', 400);
-        }
-
-        const booking = await bookings.findOne({ _id: new ObjectId(bookingId) });
-        if (!booking) {
-          throw new AppError('Booking not found.', 404);
-        }
-
-        if (
-          booking.customerEmail.toLowerCase() !== req.user!.email.toLowerCase()
-        ) {
-          throw new AppError(
-            'Forbidden: You do not own the booking for this payment session.',
-            403
-          );
-        }
-
-        const transactionId =
-          typeof session.payment_intent === 'string'
-            ? session.payment_intent
-            : session.payment_intent?.id || `pi_${session.id.slice(-16)}`;
-
-        const result = await recordVerifiedPayment({
-          bookingId,
-          stripeSessionId: session.id,
-          transactionId,
-        });
-
-        return sendSuccess(
-          res,
-          result,
-          result.alreadyProcessed
-            ? 'Payment already verified.'
-            : 'Payment verified and recorded successfully.'
-        );
+      if (!session || session.payment_status !== 'paid') {
+        throw new AppError('Payment has not been completed in Stripe.', 400);
       }
 
-      // Verify signed local test session
-      const parsedLocal = verifySignedLocalSessionToken(sessionId);
-      if (!parsedLocal.valid || !ObjectId.isValid(parsedLocal.bookingId)) {
-        throw new AppError('Invalid or tampered Stripe checkout session ID.', 400);
+      const bookingId = session.metadata?.bookingId;
+      if (!bookingId || !ObjectId.isValid(bookingId)) {
+        throw new AppError('Booking reference missing in Stripe session.', 400);
       }
 
-      const booking = await bookings.findOne({
-        _id: new ObjectId(parsedLocal.bookingId),
-      });
+      const booking = await bookings.findOne({ _id: new ObjectId(bookingId) });
       if (!booking) {
         throw new AppError('Booking not found.', 404);
       }
@@ -384,21 +303,14 @@ router.get(
         );
       }
 
-      const expectedToken = createSignedLocalSessionToken(
-        booking._id.toString(),
-        booking.customerEmail.toLowerCase()
-      );
-      if (sessionId !== expectedToken) {
-        throw new AppError('Stripe session signature verification failed.', 400);
-      }
-
-      const transactionId = `pi_3FixMate${booking._id
-        .toString()
-        .slice(-12)}`;
+      const transactionId =
+        typeof session.payment_intent === 'string'
+          ? session.payment_intent
+          : session.payment_intent?.id || `pi_${session.id.slice(-16)}`;
 
       const result = await recordVerifiedPayment({
-        bookingId: booking._id.toString(),
-        stripeSessionId: sessionId,
+        bookingId,
+        stripeSessionId: session.id,
         transactionId,
       });
 
@@ -522,6 +434,7 @@ export async function stripeWebhookHandler(
   let event: Stripe.Event;
 
   try {
+    const stripe = getStripeClient();
     const rawBody = Buffer.isBuffer(req.body)
       ? req.body
       : Buffer.from(
