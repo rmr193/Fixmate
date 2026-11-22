@@ -167,17 +167,34 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     setStoredToken(null);
     setStoredUser(null);
 
-    const res = await authClient.signIn.social({
-      provider: 'google',
-      callbackURL,
+    const response = await fetch('/api/auth/sign-in/social', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        provider: 'google',
+        callbackURL,
+      }),
     });
 
-    if (res?.error) {
+    let data: { url?: string; message?: string; error?: string } | null = null;
+    try {
+      data = await response.json();
+    } catch {
+      data = null;
+    }
+
+    if (!response.ok || !data?.url) {
       throw new Error(
-        res.error.message ||
-          'Google Sign-In failed. Ensure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are configured.'
+        data?.message ||
+          data?.error ||
+          `Google Sign-In request failed (HTTP ${response.status}).`
       );
     }
+
+    window.location.href = data.url;
   }, []);
 
   const register = useCallback(
