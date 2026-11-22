@@ -4,6 +4,7 @@ import { getCollections } from '../config/db';
 import { env } from '../config/env';
 import { signJwtToken, verifyToken } from '../middlewares/auth';
 import { AppError, sendSuccess } from '../utils/apiResponse';
+import { isSafeImageUrl } from '../utils/validators';
 
 const router = Router();
 
@@ -31,7 +32,14 @@ const updateProfileSchema = z.object({
     .max(500, 'Bio cannot exceed 500 characters.')
     .optional()
     .default(''),
-  image: z.string().trim().optional(),
+  image: z
+    .string()
+    .trim()
+    .refine(
+      (v) => v === '' || isSafeImageUrl(v),
+      'Profile image must be a valid HTTPS URL or raster image.'
+    )
+    .optional(),
 });
 
 /**
@@ -157,7 +165,23 @@ router.post(
         throw new AppError('Base64 image data is required.', 400);
       }
 
-      const cleanBase64 = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+      const trimmedImage = imageBase64.trim();
+      const allowedDataPrefix = /^data:image\/(jpeg|jpg|png|webp|gif);base64,/i;
+      if (trimmedImage.startsWith('data:') && !allowedDataPrefix.test(trimmedImage)) {
+        throw new AppError(
+          'Unsupported image format. Only JPEG, PNG, WEBP, and GIF images are allowed.',
+          400
+        );
+      }
+
+      if (trimmedImage.length > 7 * 1024 * 1024) {
+        throw new AppError('Image file exceeds the 5MB maximum limit.', 413);
+      }
+
+      const cleanBase64 = trimmedImage.replace(allowedDataPrefix, '');
+      if (!/^[A-Za-z0-9+/=]+$/.test(cleanBase64)) {
+        throw new AppError('Invalid base64 image payload.', 400);
+      }
 
       if (
         env.IMGBB_API_KEY &&
@@ -167,7 +191,7 @@ router.post(
         formData.append('key', env.IMGBB_API_KEY);
         formData.append('image', cleanBase64);
         if (name) {
-          formData.append('name', name);
+          formData.append('name', String(name).slice(0, 80));
         }
 
         const response = await fetch('https://api.imgbb.com/1/upload', {
@@ -194,9 +218,9 @@ router.post(
         }
       }
 
-      // Safe fallback when IMGBB_API_KEY is not provided in local testing
-      const dataUrl = imageBase64.startsWith('data:image/')
-        ? imageBase64
+      // Safe raster data URL fallback when IMGBB_API_KEY is not configured
+      const dataUrl = allowedDataPrefix.test(trimmedImage)
+        ? trimmedImage
         : `data:image/jpeg;base64,${cleanBase64}`;
 
       return sendSuccess(

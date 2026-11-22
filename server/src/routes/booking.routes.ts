@@ -292,8 +292,20 @@ router.get(
       const statusFilter =
         typeof req.query.status === 'string' ? req.query.status.trim() : '';
 
+      const allowedStatuses: BookingStatus[] = [
+        'requested',
+        'accepted',
+        'rejected',
+        'in-progress',
+        'completed',
+        'cancelled',
+      ];
       const filter: Filter<BookingDocument> = { technicianEmail };
-      if (statusFilter && statusFilter.toLowerCase() !== 'all') {
+      if (
+        statusFilter &&
+        statusFilter.toLowerCase() !== 'all' &&
+        allowedStatuses.includes(statusFilter as BookingStatus)
+      ) {
         filter.status = statusFilter as BookingStatus;
       }
 

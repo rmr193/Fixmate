@@ -21,31 +21,36 @@ export const mongoDb = client.db(dbName);
 const resolvedBaseUrl =
   process.env.BETTER_AUTH_URL &&
   !process.env.BETTER_AUTH_URL.includes('localhost')
-    ? process.env.BETTER_AUTH_URL
+    ? process.env.BETTER_AUTH_URL.replace(/\/$/, '')
     : process.env.NEXT_PUBLIC_APP_URL &&
       !process.env.NEXT_PUBLIC_APP_URL.includes('localhost')
-    ? process.env.NEXT_PUBLIC_APP_URL
+    ? process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '')
     : process.env.VERCEL_PROJECT_PRODUCTION_URL
     ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
     : process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
     : process.env.BETTER_AUTH_URL || 'http://localhost:3000';
 
+const trustedOrigins = Array.from(
+  new Set(
+    [
+      resolvedBaseUrl,
+      'https://fixmate-spmy.vercel.app',
+      ...(process.env.NEXT_PUBLIC_APP_URL
+        ? [process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '')]
+        : []),
+      ...(process.env.NODE_ENV !== 'production'
+        ? ['http://localhost:3000', 'http://127.0.0.1:3000']
+        : []),
+    ].filter(Boolean)
+  )
+);
+
 export const auth = betterAuth({
   database: mongodbAdapter(mongoDb),
-  secret:
-    process.env.BETTER_AUTH_SECRET ||
-    'fixmate_super_secret_better_auth_key_2026_prod_ready',
+  secret: process.env.BETTER_AUTH_SECRET,
   baseURL: resolvedBaseUrl,
-  trustedOrigins: [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    resolvedBaseUrl,
-    process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-    'https://fixmate-spmy.vercel.app',
-    'https://fixmate-app.vercel.app',
-    'https://*.vercel.app',
-  ],
+  trustedOrigins,
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 6,

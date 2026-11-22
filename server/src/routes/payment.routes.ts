@@ -96,11 +96,24 @@ export async function recordVerifiedPayment(params: {
   };
 
   try {
-    await payments.updateOne(
+    const upsertResult = await payments.updateOne(
       { bookingId: booking._id.toString() },
       { $setOnInsert: paymentDoc },
       { upsert: true }
     );
+
+    if (upsertResult.upsertedCount === 0) {
+      const concurrent = await payments.findOne({
+        $or: [{ bookingId }, { stripeSessionId }],
+      });
+      await bookings.updateOne(
+        { _id: new ObjectId(bookingId) },
+        { $set: { paymentStatus: 'paid' } }
+      );
+      if (concurrent) {
+        return { payment: concurrent, alreadyProcessed: true };
+      }
+    }
   } catch (err) {
     // Handle race condition on unique index (11000 duplicate key)
     if (

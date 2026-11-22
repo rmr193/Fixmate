@@ -1,4 +1,3 @@
-import React from 'react';
 import { ServiceCardSkeleton, Skeleton } from '@/components/ui/skeleton';
 
 export default function AppLoading() {

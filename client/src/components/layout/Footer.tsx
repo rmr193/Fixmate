@@ -1,4 +1,3 @@
-import React from 'react';
 import Link from 'next/link';
 import { Wrench, Mail, Phone, MapPin, ShieldCheck } from 'lucide-react';
 import { SERVICE_CATEGORIES } from '@/types';

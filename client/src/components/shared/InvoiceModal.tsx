@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { Printer, Wrench, ShieldCheck } from 'lucide-react';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';

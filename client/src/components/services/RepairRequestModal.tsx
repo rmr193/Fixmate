@@ -1,11 +1,10 @@
 'use client';
 
-import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { ShieldCheck, Calendar, MapPin, Phone, FileText } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 import { Modal } from '@/components/ui/modal';
 import { Input, Textarea } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';

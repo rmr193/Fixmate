@@ -1,10 +1,8 @@
-import React from 'react';
 import Link from 'next/link';
 import {
   ShieldCheck,
   Wrench,
   UserCheck,
-  CreditCard,
   CheckCircle2,
   ArrowRight,
   Lock,

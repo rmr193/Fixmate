@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import Link from 'next/link';
 import { XCircle, RotateCcw, ArrowLeft } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';

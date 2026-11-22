@@ -19,23 +19,29 @@ export function createApp(): Application {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+    if (env.NODE_ENV === 'production') {
+      res.setHeader(
+        'Strict-Transport-Security',
+        'max-age=31536000; includeSubDomains'
+      );
+    }
     next();
   });
 
-  // Strict CORS configuration allowing only trusted origins
+  // Strict CORS configuration allowing only explicitly trusted origins
   app.use(
     cors({
       origin: (origin, callback) => {
         if (!origin) return callback(null, true);
+        const normalized = origin.replace(/\/$/, '');
         if (
-          env.TRUSTED_ORIGINS.includes(origin) ||
-          origin === env.CLIENT_URL ||
-          origin === 'https://fixmate-spmy.vercel.app' ||
-          origin.endsWith('.vercel.app') ||
+          env.TRUSTED_ORIGINS.includes(normalized) ||
+          normalized === env.CLIENT_URL ||
+          normalized === 'https://fixmate-spmy.vercel.app' ||
           (env.NODE_ENV !== 'production' &&
-            (origin.startsWith('http://localhost:') ||
-              origin.startsWith('http://127.0.0.1:')))
+            (normalized.startsWith('http://localhost:') ||
+              normalized.startsWith('http://127.0.0.1:')))
         ) {
           return callback(null, true);
         }
@@ -43,12 +49,7 @@ export function createApp(): Application {
       },
       credentials: true,
       methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
-      allowedHeaders: [
-        'Content-Type',
-        'Authorization',
-        'x-access-token',
-        'stripe-signature',
-      ],
+      allowedHeaders: ['Content-Type', 'Authorization', 'stripe-signature'],
     })
   );
 
@@ -113,12 +114,13 @@ export function createApp(): Application {
   return app;
 }
 
+const app = createApp();
+
 async function startServer() {
   try {
     await connectDB();
     console.log(`[MongoDB] Connected to database: ${env.MONGODB_DB_NAME}`);
 
-    const app = createApp();
     app.listen(env.PORT, () => {
       console.log(
         `[FixMate Server] Running on http://localhost:${env.PORT} (${env.NODE_ENV})`
@@ -134,5 +136,4 @@ if (require.main === module) {
   startServer();
 }
 
-const app = createApp();
 export default app;

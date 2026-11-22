@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -10,7 +9,6 @@ import {
   DollarSign,
   ArrowRight,
   ShieldCheck,
-  ClipboardList,
   Receipt,
 } from 'lucide-react';
 import { StatsCard } from '@/components/shared/StatsCard';

@@ -51,11 +51,6 @@ function extractToken(req: Request): string | null {
     }
   }
 
-  const headerToken = req.headers['x-access-token'];
-  if (typeof headerToken === 'string' && headerToken.trim()) {
-    return headerToken.trim();
-  }
-
   return null;
 }
 

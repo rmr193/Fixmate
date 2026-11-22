@@ -1,14 +1,21 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
-import bcrypt from 'bcryptjs';
 import { ObjectId } from 'mongodb';
 import { z } from 'zod';
 import { getCollections, getDB } from '../config/db';
 import { signJwtToken, verifyToken } from '../middlewares/auth';
+import { createRateLimiter } from '../middlewares/rateLimit';
 import { AppError, sendSuccess } from '../utils/apiResponse';
+import { isSafeImageUrl } from '../utils/validators';
 import { UserRole } from '../types/models';
 
 const router = Router();
+
+const authRateLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  maxRequests: 30,
+  message: 'Too many authentication attempts. Please wait 15 minutes and try again.',
+});
 
 const SCRYPT_CONFIG = {
   N: 16384,
@@ -72,13 +79,19 @@ const registerSchema = z.object({
   password: z
     .string()
     .min(6, 'Password must be at least 6 characters long.')
+    .max(128, 'Password cannot exceed 128 characters.')
     .regex(/[A-Z]/, 'Password must contain at least one uppercase letter.')
     .regex(/[a-z]/, 'Password must contain at least one lowercase letter.'),
   role: z.string().optional(),
-  phone: z.string().trim().optional().default(''),
-  area: z.string().trim().optional().default(''),
-  bio: z.string().trim().optional().default(''),
-  image: z.string().trim().optional().default(''),
+  phone: z.string().trim().max(30).optional().default(''),
+  area: z.string().trim().max(100).optional().default(''),
+  bio: z.string().trim().max(500).optional().default(''),
+  image: z
+    .string()
+    .trim()
+    .refine((v) => v === '' || isSafeImageUrl(v), 'Invalid image URL.')
+    .optional()
+    .default(''),
 });
 
 const loginSchema = z.object({
@@ -87,7 +100,7 @@ const loginSchema = z.object({
     .trim()
     .email('Please enter a valid email address.')
     .transform((v) => v.toLowerCase()),
-  password: z.string().min(1, 'Password is required.'),
+  password: z.string().min(1, 'Password is required.').max(128),
 });
 
 /**
@@ -97,6 +110,7 @@ const loginSchema = z.object({
  */
 router.post(
   '/register',
+  authRateLimiter,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const parsed = registerSchema.parse(req.body);
@@ -139,7 +153,7 @@ router.post(
 
       await users.insertOne(newUser);
 
-      // Also store credential entry in BetterAuth 'account' collection for full compatibility
+      // Store credential entry in BetterAuth 'account' collection for full compatibility
       await db.collection('account').updateOne(
         { userId: userId.toString(), providerId: 'credential' },
         {
@@ -193,6 +207,7 @@ router.post(
  */
 router.post(
   '/login',
+  authRateLimiter,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const parsed = loginSchema.parse(req.body);
@@ -216,20 +231,16 @@ router.post(
       let passwordValid = false;
       const storedHash =
         (account?.password as string | undefined) ||
-        ((user as unknown as { password?: string }).password);
+        (user as unknown as { password?: string }).password;
 
       if (storedHash) {
-        if (storedHash.startsWith('$2a$') || storedHash.startsWith('$2b$')) {
-          passwordValid = await bcrypt.compare(parsed.password, storedHash);
-        } else {
-          try {
-            passwordValid = await verifyBetterAuthPassword(
-              storedHash,
-              parsed.password
-            );
-          } catch {
-            passwordValid = false;
-          }
+        try {
+          passwordValid = await verifyBetterAuthPassword(
+            storedHash,
+            parsed.password
+          );
+        } catch {
+          passwordValid = false;
         }
       }
 
@@ -261,75 +272,6 @@ router.post(
           },
         },
         'Signed in successfully.'
-      );
-    } catch (err) {
-      return next(err);
-    }
-  }
-);
-
-/**
- * POST /api/auth/jwt
- * Exchanges an active BetterAuth session token for an Express API JWT.
- */
-router.post(
-  '/jwt',
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { sessionToken } = req.body as { sessionToken?: string };
-      if (!sessionToken) {
-        throw new AppError('Session token is required.', 400);
-      }
-
-      const db = getDB();
-      const sessionDoc = await db.collection('session').findOne({
-        token: sessionToken,
-        expiresAt: { $gt: new Date() },
-      });
-
-      if (!sessionDoc) {
-        throw new AppError('Invalid or expired BetterAuth session.', 401);
-      }
-
-      const { users } = getCollections();
-      const userIdFilter = ObjectId.isValid(sessionDoc.userId)
-        ? {
-            $or: [
-              { _id: new ObjectId(sessionDoc.userId) },
-              { id: String(sessionDoc.userId) },
-            ],
-          }
-        : { id: String(sessionDoc.userId) };
-
-      const user = await users.findOne(userIdFilter as Record<string, unknown>);
-      if (!user) {
-        throw new AppError('User account not found.', 404);
-      }
-
-      const userIdStr = (user._id || user.id || '').toString();
-      const token = signJwtToken({
-        _id: userIdStr,
-        email: user.email,
-        role: (user.role as UserRole) || 'customer',
-        name: user.name,
-      });
-
-      return sendSuccess(
-        res,
-        {
-          token,
-          user: {
-            _id: userIdStr,
-            name: user.name,
-            email: user.email,
-            image: user.image || '',
-            role: (user.role as UserRole) || 'customer',
-            phone: user.phone || '',
-            area: user.area || '',
-            bio: user.bio || '',
-          },
-        },
-        'JWT issued successfully.'
       );
     } catch (err) {
       return next(err);

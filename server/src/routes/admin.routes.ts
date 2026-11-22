@@ -130,8 +130,13 @@ router.get(
       const search =
         typeof req.query.search === 'string' ? req.query.search.trim() : '';
 
+      const allowedRoles = ['customer', 'technician', 'admin'];
       const filter: Filter<UserDocument> = {};
-      if (roleFilter && roleFilter.toLowerCase() !== 'all') {
+      if (
+        roleFilter &&
+        roleFilter.toLowerCase() !== 'all' &&
+        allowedRoles.includes(roleFilter)
+      ) {
         filter.role = roleFilter as UserDocument['role'];
       }
       if (search) {
@@ -237,8 +242,13 @@ router.get(
           ? req.query.status.trim()
           : '';
 
+      const allowedApprovalStatuses = ['pending', 'approved', 'rejected'];
       const filter: Filter<ServiceDocument> = {};
-      if (statusParam && statusParam.toLowerCase() !== 'all') {
+      if (
+        statusParam &&
+        statusParam.toLowerCase() !== 'all' &&
+        allowedApprovalStatuses.includes(statusParam)
+      ) {
         filter.approvalStatus = statusParam as ApprovalStatus;
       }
 
@@ -320,8 +330,20 @@ router.get(
       const statusParam =
         typeof req.query.status === 'string' ? req.query.status.trim() : '';
 
+      const allowedBookingStatuses = [
+        'requested',
+        'accepted',
+        'rejected',
+        'in-progress',
+        'completed',
+        'cancelled',
+      ];
       const filter: Filter<BookingDocument> = {};
-      if (statusParam && statusParam.toLowerCase() !== 'all') {
+      if (
+        statusParam &&
+        statusParam.toLowerCase() !== 'all' &&
+        allowedBookingStatuses.includes(statusParam)
+      ) {
         filter.status = statusParam as BookingStatus;
       }
 

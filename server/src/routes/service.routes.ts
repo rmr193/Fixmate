@@ -9,6 +9,7 @@ import {
   ServiceDocument,
 } from '../types/models';
 import { AppError, sendSuccess } from '../utils/apiResponse';
+import { safeImageUrlSchema } from '../utils/validators';
 
 const router = Router();
 
@@ -26,10 +27,7 @@ const createServiceSchema = z.object({
     .trim()
     .min(20, 'Service description must be at least 20 characters.')
     .max(2000, 'Service description cannot exceed 2000 characters.'),
-  image: z
-    .string()
-    .trim()
-    .min(5, 'Service image URL is required.'),
+  image: safeImageUrlSchema,
   basePrice: z.coerce
     .number()
     .positive('Base price must be a positive number greater than 0.'),
@@ -194,11 +192,19 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
       ];
     }
 
-    if (category && category.toLowerCase() !== 'all') {
+    if (
+      category &&
+      category.toLowerCase() !== 'all' &&
+      (SERVICE_CATEGORIES as readonly string[]).includes(category)
+    ) {
       filter.category = category as ServiceDocument['category'];
     }
 
-    if (serviceMode && serviceMode.toLowerCase() !== 'all') {
+    if (
+      serviceMode &&
+      serviceMode.toLowerCase() !== 'all' &&
+      (SERVICE_MODES as readonly string[]).includes(serviceMode)
+    ) {
       filter.serviceMode = serviceMode as ServiceDocument['serviceMode'];
     }
 
@@ -276,12 +282,11 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
         { email: service.technicianEmail.toLowerCase() },
         {
           projection: {
+            _id: 0,
             name: 1,
-            email: 1,
             image: 1,
             area: 1,
             bio: 1,
-            phone: 1,
           },
         }
       ),

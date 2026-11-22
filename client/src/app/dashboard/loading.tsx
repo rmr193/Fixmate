@@ -1,4 +1,3 @@
-import React from 'react';
 import { Skeleton, TableSkeleton } from '@/components/ui/skeleton';
 
 export default function DashboardRouteLoading() {
